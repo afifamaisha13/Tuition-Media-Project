@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tuition Media Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container my-5">
+    <h2 class="text-center mb-4">📚 Tuition Media Management</h2>
+
+    <!-- Teacher Form -->
+    <div class="card mb-5 shadow-sm">
+        <div class="card-header bg-primary text-white">Add Teacher</div>
+        <div class="card-body">
+            <form id="teacherForm">
+                <div class="mb-3">
+                    <label class="form-label">Name:</label>
+                    <input type="text" name="name" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Expected Salary:</label>
+                    <input type="number" name="expectedSalary" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Educational Qualification:</label>
+                    <input type="text" name="qualification" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Phone:</label>
+                    <input type="text" name="phone" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-success">Add Teacher</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Student Form -->
+    <div class="card mb-5 shadow-sm">
+        <div class="card-header bg-secondary text-white">Add Student</div>
+        <div class="card-body">
+            <form id="studentForm">
+                <div class="mb-3">
+                    <label class="form-label">Name:</label>
+                    <input type="text" name="name" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Class:</label>
+                    <input type="text" name="studentClass" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Subject Requirement:</label>
+                    <input type="text" name="subjectRequirement" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Teacher Type:</label>
+                    <input type="text" name="teacherType" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Student</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tables Section -->
+    <div class="row">
+        <div class="col-md-6">
+            <h4 class="text-success">Teachers List</h4>
+            <table class="table table-bordered table-striped" id="teacherTable">
+                <thead class="table-success">
+                <tr>
+                    <th>Name</th>
+                    <th>Salary</th>
+                    <th>Qualification</th>
+                    <th>Phone</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="col-md-6">
+            <h4 class="text-primary">Students List</h4>
+            <table class="table table-bordered table-striped" id="studentTable">
+                <thead class="table-primary">
+                <tr>
+                    <th>Name</th>
+                    <th>Class</th>
+                    <th>Subject</th>
+                    <th>Teacher Type</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Submit teacher form
+    document.getElementById('teacherForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const form = e.target;
+        const data = {
+            name: form.name.value,
+            expectedSalary: form.expectedSalary.value,
+            qualification: form.qualification.value,
+            phone: form.phone.value
+        };
+
+        fetch('http://localhost:8080/api/teachers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+            .then(res => {
+                if (res.ok) {
+                    alert('Teacher added successfully!');
+                    form.reset();
+                    loadTeachers();
+                } else {
+                    alert('Failed to add teacher.');
+                }
+            });
+    });
+
+    // Submit student form
+    document.getElementById('studentForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const form = e.target;
+        const student = {
+            name: form.name.value,
+            studentClass: form.studentClass.value,
+            subjectRequirement: form.subjectRequirement.value,
+            teacherType: form.teacherType.value
+        };
+
+        fetch('http://localhost:8080/api/students', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(student)
+        })
+            .then(response => {
+                if (response.ok) {
+                    alert("Student added successfully!");
+                    form.reset();
+                    loadStudents();
+                } else {
+                    alert("Failed to add student.");
+                }
+            });
+    });
+
+    // Load teachers
+    function loadTeachers() {
+        fetch('http://localhost:8080/api/teachers')
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.querySelector('#teacherTable tbody');
+                tbody.innerHTML = '';
+                data.forEach(t => {
+                    tbody.innerHTML += `
+                    <tr>
+                        <td>${t.name}</td>
+                        <td>${t.expectedSalary}</td>
+                        <td>${t.qualification}</td>
+                        <td>${t.phone}</td>
+                    </tr>`;
+                });
+            });
+    }
+
+    // Load students
+    function loadStudents() {
+        fetch('http://localhost:8080/api/students')
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.querySelector('#studentTable tbody');
+                tbody.innerHTML = '';
+                data.forEach(s => {
+                    tbody.innerHTML += `
+                    <tr>
+                        <td>${s.name}</td>
+                        <td>${s.studentClass}</td>
+                        <td>${s.subjectRequirement}</td>
+                        <td>${s.teacherType}</td>
+                    </tr>`;
+                });
+            });
+    }
+
+    // Load all data on page load
+    window.onload = function() {
+        loadTeachers();
+        loadStudents();
+    }
+</script>
+
+</body>
+</html>
